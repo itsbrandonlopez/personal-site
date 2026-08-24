@@ -97,6 +97,12 @@
     pointer-events: none;
     z-index: 3;
   }
+  .mark:hover .tag.bait { border-color: var(--accent); }
+  @keyframes bait-pulse {
+    0%, 100% { color: var(--ink); }
+    50% { color: var(--accent); }
+  }
+  .tag.bait { animation: bait-pulse 1.2s ease-in-out infinite; }
 
   /* ---------- copy ---------- */
 
@@ -252,7 +258,7 @@
   }
 
   const tag = document.querySelector('.tag');
-  const phrases = ['NO SIGNAL', 'CHECK INPUT', 'UNPLUGGED'];
+  const phrases = ['NO SIGNAL', 'CLICK TO RETRY', 'RETRY FAILED &mdash; TRY AGAIN', 'OK LAST TRY'];
   let pi = 0;
 
   function rickroll() {
@@ -279,7 +285,8 @@
   mark.addEventListener('click', () => {
     pi++;
     if (pi >= phrases.length) { rickroll(); return; }
-    tag.textContent = phrases[pi];
+    tag.innerHTML = phrases[pi];
+    if (pi === 1) tag.classList.add('bait');
     if (!reduced) noise();
   });
 })();
