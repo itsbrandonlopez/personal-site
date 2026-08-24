@@ -212,10 +212,12 @@
 
 <script>
 (function () {
+  const mark = document.getElementById('mark');
   const cv = document.getElementById('static');
   const ctx = cv.getContext('2d');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const W = cv.width, H = cv.height;
+  let stopped = false;
 
   function noise() {
     const img = ctx.createImageData(W, H);
@@ -238,20 +240,36 @@
   } else {
     let raf;
     (function loop() {
+      if (stopped) return;
       noise();
       raf = requestAnimationFrame(() => setTimeout(loop, 66));
     })();
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) cancelAnimationFrame(raf);
-      else loop();
+      else if (!stopped) loop();
     });
   }
 
   const tag = document.querySelector('.tag');
   const phrases = ['NO SIGNAL', 'CHECK INPUT', 'UNPLUGGED', 'LINE 404 DEAD', 'HELLO?'];
   let pi = 0;
-  document.getElementById('mark').addEventListener('click', () => {
-    pi = (pi + 1) % phrases.length;
+
+  function rickroll() {
+    stopped = true;
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0';
+    f.title = 'Never Gonna Give You Up';
+    f.allow = 'autoplay; encrypted-media';
+    f.style.cssText = 'width:100%;height:100%;border:0;display:block';
+    cv.replaceWith(f);
+    tag.textContent = 'SIGNAL ACQUIRED';
+    mark.removeAttribute('title');
+    mark.style.cursor = 'default';
+  }
+
+  mark.addEventListener('click', () => {
+    pi++;
+    if (pi >= phrases.length) { rickroll(); return; }
     tag.textContent = phrases[pi];
     if (!reduced) noise();
   });
