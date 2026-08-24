@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Signal Lost · Brandon Lopez</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --bg: #000;
+    --ink: #fff;
+    --muted: rgba(255, 255, 255, 0.62);
+    --faint: rgba(255, 255, 255, 0.4);
+    --hairline: rgba(255, 255, 255, 0.28);
+    --accent: #e9ff4f;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace;
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+  ::selection { background: var(--accent); color: #000; }
+  a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+
+  .wrap { width: min(100% - clamp(48px, 9vw, 160px), 1400px); margin-inline: auto; }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: 28px;
+  }
+  .topbar a:hover { color: var(--accent); }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(32px, 6vw, 96px);
+    align-items: center;
+    padding-bottom: clamp(48px, 8vw, 110px);
+  }
+
+  /* ---------- static monitor ---------- */
+
+  .mark {
+    position: relative;
+    border: 1px solid var(--hairline);
+    padding: 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .mark::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+  }
+  #static {
+    display: block;
+    width: 224px;
+    height: 224px;
+    image-rendering: pixelated;
+  }
+  .mark .tag {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    background: rgba(0, 0, 0, 0.55);
+    padding: 6px 10px;
+    border: 1px solid var(--hairline);
+    pointer-events: none;
+  }
+
+  /* ---------- copy ---------- */
+
+  h1 {
+    font-size: clamp(2.8rem, 8vw, 7rem);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+    margin-bottom: 28px;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .readout {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 2;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .readout .cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .cta {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 16px 26px;
+    background: var(--accent);
+    color: #000;
+    transition: transform 0.15s ease;
+    white-space: nowrap;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .ghost {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 16px 26px;
+    border: 1px solid var(--hairline);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .ghost:hover { background: var(--ink); color: #000; border-color: var(--ink); }
+
+  footer { padding-bottom: 40px; }
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+    flex-wrap: wrap;
+  }
+  .foot-row a:hover { color: var(--accent); }
+
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; justify-items: center; text-align: center; padding-top: 12px; }
+    .actions { justify-content: center; }
+    .readout { text-align: left; display: inline-block; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar wrap">
+  <span class="label">Brandon Lopez &middot; AVL Engineer</span>
+  <a class="label" href="/">brandon-lopez.com</a>
+</div>
+
+<main class="wrap">
+  <div class="mark" id="mark" title="Give it a thump">
+    <canvas id="static" width="56" height="56"></canvas>
+    <span class="tag">NO SIGNAL</span>
+  </div>
+  <div>
+    <h1>Signal <em>lost.</em></h1>
+    <div class="readout">
+      &gt; checking the patch bay&hellip;<br>
+      &gt; tracing the line&hellip;<br>
+      &gt; this page was never plugged in<span class="cursor"></span>
+    </div>
+    <div class="actions">
+      <a class="cta" href="/">&larr; Back to the show</a>
+      <a class="ghost" href="mailto:hi@brandon-lopez.com">Report a dead channel</a>
+    </div>
+  </div>
+</main>
+
+<footer class="wrap">
+  <div class="foot-row">
+    <span class="label">&copy; 2026 Brandon Lopez</span>
+    <a class="label" href="mailto:hi@brandon-lopez.com">hi@brandon-lopez.com</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const cv = document.getElementById('static');
+  const ctx = cv.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W = cv.width, H = cv.height;
+
+  function noise() {
+    const img = ctx.createImageData(W, H);
+    const d = img.data;
+    let seed = Math.floor(Math.random() * 0xffffffff);
+    const rnd = () => {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      return (seed >>> 0) / 0xffffffff;
+    };
+    for (let i = 0; i < d.length; i += 4) {
+      const v = Math.floor(rnd() * 255);
+      d[i] = d[i + 1] = d[i + 2] = v;
+      d[i + 3] = rnd() > 0.82 ? 255 : rnd() > 0.5 ? 140 : 60;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  if (reduced) {
+    noise();
+  } else {
+    let raf;
+    (function loop() {
+      noise();
+      raf = requestAnimationFrame(() => setTimeout(loop, 66));
+    })();
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelAnimationFrame(raf);
+      else loop();
+    });
+  }
+
+  const tag = document.querySelector('.tag');
+  const phrases = ['NO SIGNAL', 'CHECK INPUT', 'UNPLUGGED', 'LINE 404 DEAD', 'HELLO?'];
+  let pi = 0;
+  document.getElementById('mark').addEventListener('click', () => {
+    pi = (pi + 1) % phrases.length;
+    tag.textContent = phrases[pi];
+    if (!reduced) noise();
+  });
+})();
+</script>
+
+</body>
+</html>
