@@ -712,7 +712,10 @@
     const ACCENT = '#e9ff4f';
 
     let running = true;
-    window.__stopGame = () => { running = false; };
+    window.__stopGame = () => {
+      running = false;
+      document.removeEventListener('keydown', onKey);
+    };
 
     const DURATION = 30000;
     let mode = 'demo';
@@ -747,13 +750,14 @@
       if (game.key) game.key(k);
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (ended || reduced || !document.getElementById('loader')) return;
+    function onKey(e) {
+      if (ended || reduced) return;
       const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'drop' }[e.key];
       if (!k) return;
       e.preventDefault();
       pressKey(k);
-    });
+    }
+    document.addEventListener('keydown', onKey);
 
     let touchStart = null;
     cv.style.touchAction = 'none';
@@ -1092,6 +1096,7 @@
           marchAcc -= 440;
           const alive = [];
           grid.forEach((r, ri) => r.forEach((v, ci) => { if (v) alive.push([ri, ci]); }));
+          if (!alive.length) break;
           const minC = Math.min(...alive.map(a => a[1]));
           const maxC = Math.max(...alive.map(a => a[1]));
           if ((dirv > 0 && maxC + dirv >= colsN) || (dirv < 0 && minC + dirv < 0)) {
