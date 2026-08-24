@@ -1069,11 +1069,12 @@
 
     /* ---------------- INVADERS ---------------- */
     function Invaders() {
-      const cs = 16, chh = 32, rows = 3, colsN = 8;
-      const ox = Math.floor((W - colsN * cs) / 2);
+      const cs = 16, chh = 32, rows = 3, colsN = 14;
       let grid, baseRow, dirv, marchAcc, aiAcc, bulletAcc, bullet, playerCol, hitFlash, celebrate;
       function init() {
-        grid = Array.from({ length: rows }, () => Array(colsN).fill(1));
+        grid = Array.from({ length: rows }, () =>
+          Array.from({ length: colsN }, (_, c) => (c >= 4 && c <= 9 ? 1 : 0))
+        );
         baseRow = 0; dirv = 1; marchAcc = aiAcc = bulletAcc = 0;
         bullet = null; playerCol = Math.floor(colsN / 2);
         hitFlash = celebrate = 0;
@@ -1091,9 +1092,13 @@
           grid.forEach((r, ri) => r.forEach((v, ci) => { if (v) alive.push([ri, ci]); }));
           const minC = Math.min(...alive.map(a => a[1]));
           const maxC = Math.max(...alive.map(a => a[1]));
-          const next = minC + dirv < 0 || maxC + dirv >= colsN ? (dirv = -dirv, baseRow++) : dirv;
-          alive.forEach(([ri, ci]) => { grid[ri][ci] = 0; grid[ri][ci + next] = 1; });
-          if (baseRow >= 4) hitFlash = 400;
+          if ((dirv > 0 && maxC + dirv >= colsN) || (dirv < 0 && minC + dirv < 0)) {
+            dirv = -dirv;
+            baseRow++;
+            if (baseRow >= 4) hitFlash = 400;
+          } else {
+            alive.forEach(([ri, ci]) => { grid[ri][ci] = 0; grid[ri][ci + dirv] = 1; });
+          }
         }
         if (mode === 'demo') {
           aiAcc += dt;
