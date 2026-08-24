@@ -1113,7 +1113,7 @@
             if (target) {
               if (playerCol < target[1]) playerCol++;
               else if (playerCol > target[1]) playerCol--;
-              else if (!bullet) bullet = { col: playerCol, y: target[0] - 1 };
+              else if (!bullet) bullet = { col: playerCol, y: 5 };
             }
           }
         }
@@ -1135,7 +1135,7 @@
       function key(k) {
         if (k === 'left' && playerCol > 0) playerCol--;
         else if (k === 'right' && playerCol < colsN - 1) playerCol++;
-        else if (k === 'up' && !bullet && !hitFlash) bullet = { col: playerCol, y: rows - 1 + baseRow - 1 };
+        else if (k === 'up' && !bullet && !hitFlash) bullet = { col: playerCol, y: 5 };
       }
 
       function draw(t) {
