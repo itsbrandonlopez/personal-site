@@ -74,6 +74,7 @@
     inset: 4px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     pointer-events: none;
+    z-index: 4;
   }
   #static {
     display: block;
@@ -147,6 +148,7 @@
     color: #000;
     transition: transform 0.15s ease;
     white-space: nowrap;
+    text-align: center;
   }
   .cta:hover { transform: translateY(-2px); }
   .ghost {
@@ -159,6 +161,7 @@
     border: 1px solid var(--hairline);
     transition: all 0.15s ease;
     white-space: nowrap;
+    text-align: center;
   }
   .ghost:hover { background: var(--ink); color: #000; border-color: var(--ink); }
 
@@ -194,7 +197,7 @@
 <main class="wrap">
   <div class="mark" id="mark" title="Give it a thump">
     <canvas id="static" width="56" height="56"></canvas>
-    <span class="tag">NO SIGNAL</span>
+    <span class="tag">Click to retry</span>
   </div>
   <div>
     <h1>Signal <em>lost.</em></h1>
@@ -258,13 +261,15 @@
   }
 
   const tag = document.querySelector('.tag');
-  const phrases = ['NO SIGNAL', 'CLICK TO RETRY', 'RETRY FAILED &mdash; TRY AGAIN', 'OK LAST TRY'];
+  const phrases = ['RETRY FAILED &mdash; TRY AGAIN', 'OK, LAST TRY'];
   let pi = 0;
 
   function rickroll() {
     stopped = true;
     const shell = document.createElement('div');
-    shell.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;background:#000';
+    shell.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden';
+    mark.insertBefore(shell, cv);
+    shell.appendChild(cv);
     const f = document.createElement('iframe');
     f.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0&rel=0&modestbranding=1';
     f.title = '';
@@ -276,10 +281,11 @@
     shield.style.cssText = 'position:absolute;inset:0;z-index:2';
     shell.appendChild(f);
     shell.appendChild(shield);
-    cv.replaceWith(shell);
     tag.textContent = 'SIGNAL ACQUIRED';
+    tag.classList.remove('bait');
     mark.removeAttribute('title');
     mark.style.cursor = 'default';
+    mark.style.borderColor = 'var(--accent)';
   }
 
   mark.addEventListener('click', () => {
