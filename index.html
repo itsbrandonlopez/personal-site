@@ -1069,7 +1069,7 @@
 
     /* ---------------- INVADERS ---------------- */
     function Invaders() {
-      const cs = 16, chh = 32, rows = 3, colsN = 14;
+      const cs = 16, chh = 32, rows = 3, colsN = 14, ox = 0;
       let grid, baseRow, dirv, marchAcc, aiAcc, bulletAcc, bullet, playerCol, hitFlash, celebrate;
       function init() {
         grid = Array.from({ length: rows }, () =>
