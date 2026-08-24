@@ -94,9 +94,9 @@
 
   .loader .pad {
     display: none;
-    grid-template-columns: repeat(3, 56px);
-    grid-template-rows: repeat(3, 44px);
-    gap: 8px;
+    grid-template-columns: repeat(3, 52px);
+    grid-template-rows: repeat(3, 52px);
+    gap: 6px;
     justify-content: center;
   }
   .loader .pad button {
@@ -105,25 +105,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(#2e2e2e, #171717);
+    background: transparent;
     color: var(--ink);
-    border: 1px solid #000;
-    border-radius: 10px;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.18),
-      inset 0 -2px 0 rgba(0, 0, 0, 0.6),
-      0 3px 0 #000;
+    border: 1px solid var(--hairline);
     touch-action: manipulation;
   }
   .loader .pad button:active {
     background: var(--accent);
     color: #000;
-    transform: translateY(2px);
-    box-shadow: none;
+    border-color: var(--accent);
   }
   .k-up { grid-area: 1 / 2; }
-  .k-left { grid-area: 2 / 1; border-radius: 12px 4px 4px 12px; }
-  .k-right { grid-area: 2 / 3; border-radius: 4px 12px 12px 4px; }
+  .k-left { grid-area: 2 / 1; }
+  .k-right { grid-area: 2 / 3; }
   .k-down { grid-area: 3 / 2; }
 
   .readout {
@@ -1107,7 +1101,7 @@
       game.draw(0);
     } else if (isTouch) {
       ensureLoop();
-      if (pad) pad.style.display = 'flex';
+      if (pad) pad.style.display = 'grid';
       if (hintEl) {
         hintEl.innerHTML = 'swipe the board &middot; or tap the pad';
         hintEl.style.visibility = 'visible';
