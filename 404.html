@@ -286,15 +286,13 @@
   if (reduced) {
     noise();
   } else {
-    let raf;
-    (function loop() {
-      if (stopped) return;
-      noise();
-      raf = requestAnimationFrame(() => setTimeout(loop, 66));
-    })();
+    let interval = null;
+    const start = () => { if (stopped || interval) return; interval = setInterval(noise, 66); };
+    const stop = () => { clearInterval(interval); interval = null; };
+    start();
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) cancelAnimationFrame(raf);
-      else if (!stopped) loop();
+      if (document.hidden) stop();
+      else start();
     });
   }
 
@@ -325,6 +323,7 @@
   }
 
   mark.addEventListener('click', () => {
+    if (stopped) return;
     pi++;
     if (pi >= phrases.length) { rickroll(); return; }
     tag.innerHTML = phrases[pi];

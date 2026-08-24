@@ -187,6 +187,9 @@
     .page { transform: none; transition: none; }
     .loader { transition: opacity 0.15s ease; }
     .readout > span, .cursor, .ell::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+    .readout { height: auto; width: auto; }
+    .readout > span { position: static; opacity: 1; clip-path: none; }
+    .ell::after { width: auto; }
   }
 
   /* ============================== MOBILE ============================== */
@@ -655,7 +658,7 @@
       <span class="label">&copy; 2026 Brandon Lopez</span>
       <div class="links">
         <a class="label" href="#LINKEDIN_URL">LinkedIn</a>
-        <a class="label" href="#GITHUB_URL">GitHub</a>
+        <a class="label" href="https://github.com/itsbrandonlopez">GitHub</a>
       </div>
     </div>
   </footer>
@@ -757,8 +760,7 @@
       e.preventDefault();
       pressKey(k);
     }
-    document.addEventListener('keydown', onKey);
-
+    if (!reduced) document.addEventListener('keydown', onKey);
     let touchStart = null;
     cv.style.touchAction = 'none';
     cv.addEventListener('touchstart', (e) => {
@@ -930,7 +932,7 @@
         const h = body[body.length - 1];
         const nh = [h[0] + dir[0], h[1] + dir[1]];
         if (nh[0] < 0 || nh[0] >= n || nh[1] < 0 || nh[1] >= n ||
-            body.slice(0, -1).some(s => eq(s, nh))) {
+            (grow > 0 ? body : body.slice(0, -1)).some(s => eq(s, nh))) {
           reset(true);
           return;
         }
@@ -945,8 +947,8 @@
         if (free) stepFree(); else stepPath();
       }
       function key(k) {
-        if (!['left', 'right', 'up', 'down'].includes(k)) return;
         free = true;
+        if (!['left', 'right', 'up', 'down'].includes(k)) return;
         const nd = k === 'left' ? [-1, 0] : k === 'right' ? [1, 0] : k === 'up' ? [0, -1] : [0, 1];
         if (dir[0] === -nd[0] && dir[1] === -nd[1]) return;
         dir = nd;
@@ -969,7 +971,7 @@
       const cols = 14, laneRows = 5;
       const cw = 16, chh = 32;
       const totalRows = laneRows + 2;
-      let lanes, col, row, hopTimer, squash, celebrate;
+      let lanes, col, row, squash, celebrate;
       let reached = false;
       function makeLane(r) {
         const dirv = r % 2 === 0 ? 1 : -1;
@@ -987,7 +989,6 @@
       function resetFrog() {
         col = Math.floor(cols / 2);
         row = 0;
-        hopTimer = 600;
       }
       initLanes();
       resetFrog();
@@ -996,7 +997,7 @@
 
       function overlap(gy, cMin, cMax) {
         if (gy < 1 || gy > laneRows) return false;
-        return lanes[gy - 1].cars.some(c => cMax >= c.x && cMin <= c.x + c.len - 1);
+        return lanes[laneRows - gy].cars.some(c => cMax >= c.x && cMin <= c.x + c.len - 1);
       }
 
       function update(dt) {
