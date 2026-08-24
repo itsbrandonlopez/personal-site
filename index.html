@@ -1067,12 +1067,90 @@
       return { update, draw, key, won: () => reached };
     }
 
+    /* ---------------- INVADERS ---------------- */
+    function Invaders() {
+      const cs = 16, chh = 32, rows = 3, colsN = 8;
+      const ox = Math.floor((W - colsN * cs) / 2);
+      let grid, baseRow, dirv, marchAcc, aiAcc, bulletAcc, bullet, playerCol, hitFlash, celebrate;
+      function init() {
+        grid = Array.from({ length: rows }, () => Array(colsN).fill(1));
+        baseRow = 0; dirv = 1; marchAcc = aiAcc = bulletAcc = 0;
+        bullet = null; playerCol = Math.floor(colsN / 2);
+        hitFlash = celebrate = 0;
+      }
+      init();
+      const total = () => grid.flat().filter(Boolean).length;
+
+      function update(dt) {
+        if (celebrate > 0) { celebrate -= dt; return; }
+        if (hitFlash > 0) { hitFlash -= dt; init(); return; }
+        marchAcc += dt;
+        while (marchAcc >= 440) {
+          marchAcc -= 440;
+          const alive = [];
+          grid.forEach((r, ri) => r.forEach((v, ci) => { if (v) alive.push([ri, ci]); }));
+          const minC = Math.min(...alive.map(a => a[1]));
+          const maxC = Math.max(...alive.map(a => a[1]));
+          const next = minC + dirv < 0 || maxC + dirv >= colsN ? (dirv = -dirv, baseRow++) : dirv;
+          alive.forEach(([ri, ci]) => { grid[ri][ci] = 0; grid[ri][ci + next] = 1; });
+          if (baseRow >= 4) hitFlash = 400;
+        }
+        if (mode === 'demo') {
+          aiAcc += dt;
+          if (aiAcc >= 160) {
+            aiAcc = 0;
+            let target = null;
+            for (let y = rows - 1; y >= 0 && !target; y--)
+              for (let x = 0; x < colsN && !target; x++)
+                if (grid[y][x]) target = [y + baseRow, x];
+            if (target) {
+              if (playerCol < target[1]) playerCol++;
+              else if (playerCol > target[1]) playerCol--;
+              else if (!bullet) bullet = { col: playerCol, y: target[0] - 1 };
+            }
+          }
+        }
+        if (bullet) {
+          bulletAcc += dt;
+          while (bulletAcc >= 70 && bullet) {
+            bulletAcc -= 70;
+            bullet.y--;
+            if (bullet.y < 0) { bullet = null; break; }
+            const gy = bullet.y - baseRow;
+            if (gy >= 0 && gy < rows && grid[gy][bullet.col]) {
+              grid[gy][bullet.col] = 0;
+              bullet = null;
+            }
+          }
+        }
+      }
+
+      function key(k) {
+        if (k === 'left' && playerCol > 0) playerCol--;
+        else if (k === 'right' && playerCol < colsN - 1) playerCol++;
+        else if (k === 'up' && !bullet && !hitFlash) bullet = { col: playerCol, y: rows - 1 + baseRow - 1 };
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = INK;
+        grid.forEach((r, ri) => r.forEach((v, ci) => {
+          if (v) ctx.fillRect(ox + ci * cs + 3, (ri + baseRow) * chh + 10, cs - 6, cs - 6);
+        }));
+        if (bullet) ctx.fillRect(ox + bullet.col * cs + 7, bullet.y * chh + 12, 2, 8);
+        const blink = hitFlash > 0 && Math.floor(t / 120) % 2 === 0;
+        ctx.fillStyle = blink ? INK : ACCENT;
+        ctx.fillRect(ox + playerCol * cs + 1, 6 * chh + 14, cs - 2, 10);
+      }
+      return { update, draw, key, won: () => total() === 0 };
+    }
+
     function cell(x, y, s, color) {
       ctx.fillStyle = color;
       ctx.fillRect(x + 1, y + 1, s - 2, s - 2);
     }
 
-    const Game = [Tetris, Snake, Frogger][rand(3)];
+    const Game = [Tetris, Snake, Frogger, Invaders][rand(4)];
     const game = Game();
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
