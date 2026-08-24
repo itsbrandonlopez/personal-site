@@ -270,16 +270,14 @@
     shell.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden';
     mark.insertBefore(shell, cv);
     shell.appendChild(cv);
-    const f = document.createElement('iframe');
-    f.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0&rel=0&modestbranding=1&iv_load_policy=3&fs=0&disablekb=1&playsinline=1';
-    f.title = '';
-    f.allow = 'autoplay; encrypted-media';
-    f.style.cssText =
-      'position:absolute;top:50%;left:50%;height:132%;width:234.67%;' +
-      'transform:translate(-50%,-50%);border:0;display:block;pointer-events:none';
+    const g = document.createElement('img');
+    g.src = 'https://media.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif';
+    g.alt = '';
+    g.style.cssText =
+      'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';
     const shield = document.createElement('div');
     shield.style.cssText = 'position:absolute;inset:0;z-index:2';
-    shell.appendChild(f);
+    shell.appendChild(g);
     shell.appendChild(shield);
     tag.textContent = 'SIGNAL ACQUIRED';
     tag.classList.remove('bait');
