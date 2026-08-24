@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brandon Lopez — AVL Engineer & Technical Director</title>
+<meta name="description" content="Live audio, Q-SYS control systems, brand work, and software built by feel. Different rooms, same instinct: figure out how something works, then make it better.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='7' r='2' fill='%23e9ff4f'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #000;
+    --ink: #fff;
+    --muted: rgba(255, 255, 255, 0.62);
+    --faint: rgba(255, 255, 255, 0.4);
+    --hairline: rgba(255, 255, 255, 0.28);
+    --accent: #e9ff4f;
+    --ease-snap: cubic-bezier(0.76, 0, 0.24, 1);
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace;
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--accent); color: #000; }
+
+  a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ============================== LOADER ============================== */
+
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    transition: opacity 0.6s ease 0.55s;
+  }
+  .loader.done { opacity: 0; pointer-events: none; }
+
+  .loader .hint,
+  .label,
+  .scroll-hint,
+  .row .when,
+  .cell .action {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+  .loader .hint,
+  .label,
+  .scroll-hint,
+  .cell .action { letter-spacing: 0.14em; }
+  .loader .hint,
+  .label,
+  .cell .action { font-weight: 600; }
+
+  .loader .hint {
+    color: var(--faint);
+    visibility: hidden;
+  }
+
+  .loader .mark { width: 224px; height: 224px; }
+  .loader canvas {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+  .readout {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    height: 1.4em;
+    position: relative;
+    width: 34ch;
+    max-width: 84vw;
+    text-align: left;
+  }
+  .readout > span {
+    position: absolute; inset: 0;
+    white-space: nowrap;
+    opacity: 0;
+    animation: type 12s steps(1) infinite;
+  }
+  .readout > span:nth-child(2) { animation-delay: 3s; }
+  .readout > span:nth-child(3) { animation-delay: 6s; }
+  .readout > span:nth-child(4) { animation-delay: 9s; }
+
+  .cursor {
+    display: inline-block;
+    width: 0.55em; height: 1em;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink 1.06s steps(1) infinite;
+  }
+
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  .ell::after {
+    content: "\2026";
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    width: 0;
+    animation: ellipsis 900ms steps(4, end) infinite;
+  }
+
+  @keyframes ellipsis {
+    to { width: 1.25em; }
+  }
+
+  @keyframes type {
+    0%        { opacity: 1; clip-path: inset(0 100% 0 0); }
+    5%        { opacity: 1; clip-path: inset(0 0 0 0); }
+    20%       { opacity: 1; clip-path: inset(0 0 0 0); }
+    23.9%     { opacity: 1; clip-path: inset(0 0 0 100%); }
+    24%, 100% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  }
+
+  /* ============================== PAGE REVEAL ============================== */
+
+  .page {
+    transform: translateY(100vh);
+    transition: transform 1.1s var(--ease-snap);
+  }
+  .page.ready { transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .page { transform: none; transition: none; }
+    .loader { transition: opacity 0.15s ease; }
+    .readout > span, .cursor, .ell::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+  }
+
+  /* ============================== MOBILE ============================== */
+
+  @media (max-width: 640px) {
+    .wrap { width: min(100% - 40px, 1400px); }
+
+    .hero { padding-block: 20px 28px; }
+    .hero .topbar { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .hero h1 { font-size: clamp(3rem, 16.5vw, 4.6rem); }
+    .hero .sub { flex-direction: column; align-items: flex-start; gap: 18px; }
+    .scroll-hint { display: none; }
+
+    .section-head h2 { font-size: clamp(2rem, 9.5vw, 2.9rem); }
+
+    .about-body p { font-size: 1rem; }
+
+    .row h3 { font-size: 1.05rem; }
+    .row li { font-size: 0.88rem; }
+
+    .cell { padding: 24px 20px; }
+
+    .contact-line { padding: 28px 0; word-break: break-word; }
+
+    .foot-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .foot-row .links { gap: 28px; }
+    .foot-row a { display: inline-block; padding: 8px 0; }
+
+    .loader { gap: 30px; }
+    .loader .hint { padding-inline: 16px; text-align: center; }
+    .readout { width: 30ch; }
+  }
+
+  /* ============================== SHARED ============================== */
+
+  .wrap {
+    width: min(100% - clamp(48px, 9vw, 160px), 1400px);
+    margin-inline: auto;
+  }
+
+  .label {
+    color: var(--muted);
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .section-head h2 {
+    font-size: clamp(2.4rem, 6vw, 5.5rem);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .section-head p {
+    max-width: 300px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  section { padding-bottom: clamp(72px, 10vw, 140px); }
+
+  /* ============================== HERO ============================== */
+
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding-block: 28px 36px;
+  }
+
+  .hero .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .hero h1 {
+    margin: auto 0;
+    font-size: clamp(3.4rem, 11vw, 11rem);
+    font-weight: 500;
+    letter-spacing: -0.06em;
+    line-height: 0.92;
+    max-width: 12ch;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+    display: inline-block;
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+  .hero h1 em.out {
+    opacity: 0;
+    transform: translateY(-0.18em);
+  }
+  .hero h1 em.pre {
+    transition: none;
+    opacity: 0;
+    transform: translateY(0.18em);
+  }
+
+  .hero h1 em span { font-style: normal; }
+  .hero h1 em span.it { font-style: italic; }
+
+  .hero .sub {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+  }
+
+  .hero .sub p {
+    max-width: 420px;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .scroll-hint {
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  /* ============================== ABOUT ============================== */
+
+  .about-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 56px;
+  }
+
+  .about-body p {
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .about-body p strong { color: var(--ink); font-weight: 500; }
+
+  @media (max-width: 800px) {
+    .about-body { grid-template-columns: 1fr; gap: 20px; }
+    .section-head { flex-direction: column; gap: 16px; }
+  }
+
+  /* ============================== RESUME ============================== */
+
+  .rows { border-top: 1px solid var(--hairline); margin-top: 56px; }
+
+  .row,
+  .cell { transition: background 0.22s ease, color 0.22s ease; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 150px 240px 1fr;
+    gap: 32px;
+    padding: 30px 24px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .row:hover {
+    background: var(--accent);
+    color: #000;
+  }
+  .row:hover .label, .row:hover .when { color: rgba(0,0,0,0.65); }
+
+  .row .when {
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding-top: 5px;
+  }
+
+  .row h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .row h3 span {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .row:hover h3 span { color: rgba(0,0,0,0.65); }
+
+  .row ul { list-style: none; }
+  .row li {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--muted);
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .row li:last-child { margin-bottom: 0; }
+  .row li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--faint);
+  }
+  .row:hover li { color: rgba(0,0,0,0.75); }
+  .row:hover li::before { color: rgba(0,0,0,0.45); }
+
+  @media (max-width: 900px) {
+    .row { grid-template-columns: 1fr; gap: 12px; padding: 26px 18px; }
+  }
+
+  /* ============================== PROJECTS ============================== */
+
+  .proj-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    margin-top: 56px;
+  }
+
+  .cell {
+    min-height: 430px;
+    padding: 28px 26px;
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+  }
+  .cell:last-child { border-right: none; }
+
+  .cell:is(:hover, :focus-visible) {
+    background: var(--accent);
+    color: #000;
+  }
+  .cell:is(:hover, :focus-visible) .label { color: rgba(0,0,0,0.65); }
+
+  .cell .status { display: flex; justify-content: space-between; gap: 12px; }
+  .cell .status i { font-style: normal; color: var(--faint); }
+  .cell:is(:hover, :focus-visible) .status i { color: rgba(0,0,0,0.5); }
+
+  .cell h3 {
+    margin: auto 0 14px;
+    font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+
+  .cell p {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+  .cell:is(:hover, :focus-visible) p { color: rgba(0,0,0,0.75); }
+
+  .cell .action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cell .action::after { content: "\2197"; font-size: 1.1rem; }
+  .cell.contact .action::after { content: "\2192"; }
+
+  @media (max-width: 900px) {
+    .proj-grid { grid-template-columns: 1fr; }
+    .cell { border-right: none; border-bottom: 1px solid var(--hairline); min-height: 340px; }
+    .cell:last-child { border-bottom: none; }
+  }
+
+  /* ============================== CONTACT / FOOTER ============================== */
+
+  footer { padding-bottom: 40px; }
+
+  .contact-line {
+    display: block;
+    font-size: clamp(2rem, 7vw, 6.5rem);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    padding: 40px 0;
+    transition: color 0.22s ease;
+    word-break: break-all;
+  }
+  .contact-line:hover { color: var(--accent); }
+
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .foot-row .links { display: flex; gap: 24px; }
+  .foot-row a { transition: color 0.22s ease; }
+  .foot-row a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .section-head { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play</div>
+
+  <div class="mark">
+    <canvas id="loader-game" width="224" height="224"></canvas>
+  </div>
+  <div class="readout">
+    <span>&gt; warming up the PA<span class="ell"></span></span>
+    <span>&gt; running cable<span class="ell"></span></span>
+    <span>&gt; ringing out the room<span class="ell"></span></span>
+    <span>&gt; almost showtime<span class="ell"></span><i class="cursor"></i></span>
+  </div>
+</div>
+
+<div class="page" id="page">
+
+  <!-- HERO -->
+  <header class="hero wrap">
+    <div class="topbar">
+      <span class="label">Brandon Lopez</span>
+      <span class="label">AVL Engineer &amp; Technical Director</span>
+    </div>
+    <h1>I <em id="hero-word">fix</em> things.</h1>
+    <div class="sub">
+      <p>Live audio, Q-SYS control systems, brand work, software built by feel — different rooms, same instinct: figure out how something actually works, then make it better.</p>
+      <span class="scroll-hint">Scroll &darr;</span>
+    </div>
+  </header>
+
+  <!-- PROJECTS -->
+  <section class="wrap" aria-labelledby="projects-h">
+    <div class="section-head">
+      <h2 id="projects-h">Things I'm building.</h2>
+      <p>Software for rooms full of people and the people running the room.</p>
+    </div>
+    <div class="proj-grid">
+
+      <a class="cell" href="#PROJECT_URL_OPENCAPTION">
+        <div class="status"><span class="label">01</span><i>Finalizing</i></div>
+        <h3>OpenCaption Live</h3>
+        <p>Word-by-word live captions that run entirely offline on a Mac in your rack. No cloud speech API, no per-minute billing, nothing recorded — ever. In field testing at real shows now.</p>
+        <div class="action">Take a look</div>
+      </a>
+
+      <a class="cell" href="#PROJECT_URL_DANTE">
+        <div class="status"><span class="label">02</span><i>Live</i></div>
+        <h3>Dante Doctor</h3>
+        <p>Troubleshooting for Dante networks, minus the forum spelunking. Find the problem before the problem finds your show.</p>
+        <div class="action">Take a look</div>
+      </a>
+
+      <a class="cell contact" href="#CONTACT_EMAIL">
+        <div class="status"><span class="label">03</span><i>In development</i></div>
+        <h3>Caption Suite for Resolve</h3>
+        <p>A suite of captioning tools for DaVinci Resolve, currently being written. Want to talk shop about captions, Resolve, or anything else on this page?</p>
+        <div class="action">Get in touch</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="wrap" aria-labelledby="about-h">
+    <div class="section-head">
+      <h2 id="about-h">A little about me.</h2>
+      <p>What I do, where I've been, and where I'm pointed.</p>
+    </div>
+    <div class="about-body">
+      <p>Most of my time goes to live events and freelance AVL/Q-SYS work — churches, venues, integration companies across the Southeast. I've tuned PAs, show-called a 1,400-seat theatre, and built volunteer teams that run it all without me standing behind them.</p>
+      <p>Lately I've been pointing that same skill set at <strong>themed entertainment</strong>. Haven't worked on an attraction yet — but the instinct's identical, and the appeal's obvious.</p>
+    </div>
+  </section>
+
+  <!-- RESUME -->
+  <section class="wrap" aria-labelledby="resume-h">
+    <div class="section-head">
+      <h2 id="resume-h">The receipts.</h2>
+      <p>A resume that lives here instead of a PDF nobody downloads.</p>
+    </div>
+    <div class="rows">
+
+      <article class="row">
+        <span class="when">Jul 2023 – Now</span>
+        <h3>Technical Director<span>Image Church · Part-time</span></h3>
+        <ul>
+          <li>Built and lead a production team of 20+ volunteers; reimagined the entire AVL infrastructure — re-tuned PA, Blackmagic video switching, custom Q-SYS control interface — cutting operational errors by 60%.</li>
+          <li>Design and execute Sunday gatherings for 200+ in-person and online attendees.</li>
+          <li>Direct creative workflows across photography, video editing, and design for in-room and broadcast media.</li>
+        </ul>
+      </article>
+
+      <article class="row">
+        <span class="when">Jun 2015 – Now</span>
+        <h3>Production Consultant &amp; Technical Lead<span>Freelance</span></h3>
+        <ul>
+          <li>Technical lead and A1/A2 audio engineer for corporate, nonprofit, and worship events across the Southeast, partnering with Streamline Productions and Aero Productions.</li>
+          <li>Design and integrate complex systems — Dante, Q-SYS, multi-camera workflows — for scalable, repeatable live environments.</li>
+          <li>Develop training documentation and hands-on sessions for volunteers and staff.</li>
+        </ul>
+      </article>
+
+      <article class="row">
+        <span class="when">Sep 2022 – Apr 2024</span>
+        <h3>AV Systems Engineer<span>Summit Integrated Systems · Remote</span></h3>
+        <ul>
+          <li>Client-facing technical advisor for 30+ enterprise AV projects weekly; led Q-SYS programming and commissioning as in-house expert.</li>
+          <li>Transformed a single-person support operation into a scalable department, including internal IT operations.</li>
+          <li>Rebuilt internal ops — documentation, ticketing, CRM integration — improving efficiency departmentwide.</li>
+        </ul>
+      </article>
+
+      <article class="row">
+        <span class="when">Dec 2019 – Sep 2022</span>
+        <h3>Technical Director<span>Christ Covenant · Full-time</span></h3>
+        <ul>
+          <li>Produced and show-called two full-scale Sunday services at the Buckhead Theatre for 1,400+ attendees.</li>
+          <li>Designed and commissioned AVL systems for a new $17M facility, built for interoperability and simple volunteer operation.</li>
+          <li>Built and led a 40+ person volunteer production team across audio, lighting, and video.</li>
+        </ul>
+      </article>
+
+      <article class="row">
+        <span class="when">Feb 2019 – Oct 2019</span>
+        <h3>Creative Director<span>Influencers Church Gwinnett · Full-time</span></h3>
+        <ul>
+          <li>Led creative vision and brand strategy across multiple US campuses — design, video, photography, digital content.</li>
+          <li>Built and directed creative teams, raising quality and consistency across every brand touchpoint.</li>
+        </ul>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- CONTACT / FOOTER -->
+  <footer class="wrap">
+    <span class="label">04 / Say hello</span>
+    <a class="contact-line" href="#CONTACT_EMAIL">hello@brandonlopez.com</a>
+    <div class="foot-row">
+      <span class="label">&copy; 2026 Brandon Lopez</span>
+      <div class="links">
+        <a class="label" href="#LINKEDIN_URL">LinkedIn</a>
+        <a class="label" href="#GITHUB_URL">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    const loader = document.getElementById('loader');
+    const page = document.getElementById('page');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const MIN_SHOW = 7200;
+    const start = performance.now();
+
+    let revealed = false;
+    function reveal(immediate) {
+      if (revealed) return;
+      if (!immediate && ((window.__loaderPlaying && window.__loaderPlaying()) || performance.now() - start < MIN_SHOW)) {
+        setTimeout(reveal, 400);
+        return;
+      }
+      revealed = true;
+      if (window.__stopGame) window.__stopGame();
+      page.classList.add('ready');
+      loader.classList.add('done');
+      setTimeout(() => loader.remove(), 1600);
+    }
+    window.__reveal = reveal;
+
+    if (reduced) {
+      reveal(true);
+      return;
+    }
+
+    const go = () => reveal();
+
+    window.addEventListener('load', go);
+    setTimeout(go, 9500);
+  })();
+
+  (function () {
+    const cv = document.getElementById('loader-game');
+    if (!cv) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ctx = cv.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = 224, H = 224;
+    cv.width = W * dpr;
+    cv.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    const INK = '#ffffff';
+    const DIM = 'rgba(255,255,255,0.45)';
+    const ACCENT = '#e9ff4f';
+
+    let running = true;
+    window.__stopGame = () => { running = false; };
+
+    const DURATION = 30000;
+    let mode = 'demo';
+    let deadline = 0;
+    const hintEl = document.getElementById('loader-hint');
+    let ended = false;
+    window.__loaderPlaying = () => mode === 'playing' && !ended;
+
+    function startPlay() {
+      if (mode === 'playing' || ended) return;
+      mode = 'playing';
+      deadline = performance.now() + DURATION;
+      if (hintEl) {
+        hintEl.style.visibility = 'visible';
+        hintEl.innerHTML = '&gt; go!';
+      }
+    }
+
+    function finish(win) {
+      if (ended) return;
+      ended = true;
+      running = false;
+      if (hintEl) hintEl.innerHTML = win ? '&gt; cleared. shipping it.' : '&gt; time&rsquo;s up.';
+      setTimeout(() => window.__reveal(), 900);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (ended || reduced || !document.getElementById('loader')) return;
+      const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'drop' }[e.key];
+      if (!k) return;
+      e.preventDefault();
+      startPlay();
+      ensureLoop();
+      if (game.key) game.key(k);
+    });
+
+    function rand(n) { return Math.floor(Math.random() * n); }
+
+    /* ---------------- TETRIS ---------------- */
+    function Tetris() {
+      const cols = 10, rows = 13, cs = 16;
+      const ox = (W - cols * cs) / 2, oy = (H - rows * cs) / 2;
+      let grid, piece, acc, lockDelay, flash, cleared;
+      const shapes = [
+        [[0,0],[1,0],[2,0],[3,0]],
+        [[0,0],[1,0],[0,1],[1,1]],
+        [[0,0],[1,0],[2,0],[1,1]],
+        [[0,0],[0,1],[0,2],[1,2]],
+        [[1,0],[2,0],[0,1],[1,1]]
+      ];
+      function emptyGrid() {
+        return Array.from({ length: rows }, () => Array(cols).fill(0));
+      }
+      function collide(s, px, py) {
+        return s.some(([sx, sy]) => {
+          const gx = px + sx, gy = py + sy;
+          if (gx < 0 || gx >= cols || gy >= rows) return true;
+          return gy >= 0 && grid[gy][gx];
+        });
+      }
+      function spawn() {
+        const s = shapes[rand(shapes.length)];
+        const w = Math.max(...s.map(p => p[0])) + 1;
+        piece = { s, x: rand(cols - w + 1), y: 0 };
+      }
+      function reset() { grid = emptyGrid(); spawn(); flash = null; lockDelay = 0; cleared = 0; }
+      reset();
+      function clearFullRows() {
+        const full = [];
+        for (let y = 0; y < rows; y++) {
+          if (grid[y].every(v => v)) full.push(y);
+        }
+        if (!full.length) return false;
+        cleared += full.length;
+        const next = grid.filter((_, y) => !full.includes(y));
+        while (next.length < rows) next.unshift(Array(cols).fill(0));
+        flash = { until: 320, grid: next };
+        return true;
+      }
+      function update(dt) {
+        if (flash) {
+          flash.until -= dt;
+          if (flash.until <= 0) { grid = flash.grid; flash = null; piece = null; lockDelay = 200; }
+          return;
+        }
+        if (lockDelay > 0) { lockDelay -= dt; if (lockDelay <= 0 && !piece) spawn(); return; }
+        acc += dt;
+        if (acc < 420) return;
+        acc = 0;
+        if (!piece) return;
+        piece.y++;
+        if (collide(piece.s, piece.x, piece.y)) {
+          piece.y--;
+          let over = false;
+          piece.s.forEach(([sx, sy]) => {
+            const gy = piece.y + sy, gx = piece.x + sx;
+            if (gy < 0) { over = true; return; }
+            grid[gy][gx] = 1;
+          });
+          piece = null;
+          if (over) { reset(); return; }
+          if (!clearFullRows()) lockDelay = 140;
+        }
+      }
+      function key(k) {
+        if (!piece) return;
+        if (k === 'left' && !collide(piece.s, piece.x - 1, piece.y)) piece.x--;
+        else if (k === 'right' && !collide(piece.s, piece.x + 1, piece.y)) piece.x++;
+        else if (k === 'down') acc = 1000;
+        else if (k === 'drop') {
+          while (!collide(piece.s, piece.x, piece.y + 1)) piece.y++;
+          acc = 1000;
+        } else if (k === 'up') {
+          const maxY = Math.max(...piece.s.map(p => p[1]));
+          const rs = piece.s.map(([x, y]) => [maxY - y, x]);
+          for (const dx of [0, -1, 1, -2, 2]) {
+            if (!collide(rs, piece.x + dx, piece.y)) { piece.s = rs; piece.x += dx; break; }
+          }
+        }
+      }
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[y][x]) cell(ox + x * cs, oy + y * cs, cs, INK);
+          }
+        }
+        ctx.fillStyle = ACCENT;
+        ctx.fillRect(ox - 4, oy + rows * cs + 2, cols * cs + 8, 2);
+        if (piece) {
+          piece.s.forEach(([sx, sy]) => {
+            const gy = piece.y + sy;
+            if (gy >= 0) cell(ox + (piece.x + sx) * cs, oy + gy * cs, cs, INK);
+          });
+        }
+        if (flash) {
+          for (let y = 0; y < rows; y++) {
+            if (grid[y].every(v => v)) {
+              for (let x = 0; x < cols; x++) cell(ox + x * cs, oy + y * cs, cs, ACCENT);
+            }
+          }
+        }
+      }
+      return { update, draw, key, won: () => cleared >= 1 };
+    }
+
+    /* ---------------- SNAKE ---------------- */
+    function Snake() {
+      const n = 11, cs = 16;
+      const ox = (W - n * cs) / 2, oy = (H - n * cs) / 2;
+      const path = [];
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          path.push([r % 2 === 0 ? c : n - 1 - c, r]);
+        }
+      }
+      const total = path.length;
+      let body, idx, grow, acc, free, dir, eaten, food;
+      const eq = (a, b) => a[0] === b[0] && a[1] === b[1];
+      function placeFood() {
+        let tries = 0;
+        do { food = rand(total); tries++; }
+        while (tries < 300 && body.some(s => eq(s, path[food])));
+      }
+      function reset(keepFree) {
+        body = [[0,0],[1,0],[2,0],[3,0]];
+        idx = 3; grow = 0; free = !!keepFree; dir = [1, 0]; eaten = 0;
+        acc = 0;
+        placeFood();
+      }
+      reset(false);
+      function stepPath() {
+        idx = (idx + 1) % total;
+        body.push(path[idx].slice());
+        if (idx === food) { grow += 2; eaten++; placeFood(); }
+        if (grow > 0) grow--; else body.shift();
+      }
+      function stepFree() {
+        const h = body[body.length - 1];
+        const nh = [h[0] + dir[0], h[1] + dir[1]];
+        if (nh[0] < 0 || nh[0] >= n || nh[1] < 0 || nh[1] >= n ||
+            body.slice(0, -1).some(s => eq(s, nh))) {
+          reset(true);
+          return;
+        }
+        body.push(nh);
+        if (eq(nh, path[food])) { grow += 2; eaten++; placeFood(); }
+        if (grow > 0) grow--; else body.shift();
+      }
+      function update(dt) {
+        acc += dt;
+        if (acc < 130) return;
+        acc = 0;
+        if (free) stepFree(); else stepPath();
+      }
+      function key(k) {
+        if (!['left', 'right', 'up', 'down'].includes(k)) return;
+        free = true;
+        const nd = k === 'left' ? [-1, 0] : k === 'right' ? [1, 0] : k === 'up' ? [0, -1] : [0, 1];
+        if (dir[0] === -nd[0] && dir[1] === -nd[1]) return;
+        dir = nd;
+      }
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        body.forEach(([x, y], k) => {
+          cell(ox + x * cs, oy + y * cs, cs, k === body.length - 1 ? INK : DIM);
+        });
+        if (Math.floor(t / 300) % 2 === 0) {
+          const [fx, fy] = path[food];
+          cell(ox + fx * cs, oy + fy * cs, cs, ACCENT);
+        }
+      }
+      return { update, draw, key, won: () => eaten >= 3 };
+    }
+
+    /* ---------------- FROGGER ---------------- */
+    function Frogger() {
+      const cols = 13, laneRows = 5, cs = 16;
+      const totalRows = laneRows + 2;
+      const ox = (W - cols * cs) / 2, oy = (H - totalRows * cs) / 2;
+      let lanes, col, row, hopTimer, squash, celebrate;
+      let reached = false;
+      function makeLane(r) {
+        const dirv = r % 2 === 0 ? 1 : -1;
+        const cars = [];
+        let x = rand(4);
+        while (x < cols - 2) {
+          cars.push({ x, len: 2 + rand(2) });
+          x += cars[cars.length - 1].len + 3 + rand(4);
+        }
+        return { cars, dirv, ms: 480 - r * 30, acc: rand(400) };
+      }
+      function initLanes() {
+        lanes = Array.from({ length: laneRows }, (_, r) => makeLane(r));
+      }
+      function resetFrog() {
+        col = Math.floor(cols / 2);
+        row = 0;
+        hopTimer = 600;
+      }
+      initLanes();
+      resetFrog();
+      squash = 0;
+      celebrate = 0;
+
+      function overlap(gy, cMin, cMax) {
+        if (gy < 1 || gy > laneRows) return false;
+        return lanes[gy - 1].cars.some(c => cMax >= c.x && cMin <= c.x + c.len - 1);
+      }
+
+      function update(dt) {
+        lanes.forEach(l => {
+          l.acc += dt;
+          while (l.acc >= l.ms) {
+            l.acc -= l.ms;
+            l.cars.forEach(c => { c.x += l.dirv; });
+          }
+        });
+        lanes.forEach(l => l.cars.forEach(c => {
+          if (l.dirv > 0 && c.x > cols) c.x = -c.len;
+          if (l.dirv < 0 && c.x + c.len < -1) c.x = cols;
+        }));
+        if (celebrate > 0) { celebrate -= dt; return; }
+        if (squash > 0) {
+          squash -= dt;
+          if (squash <= 0) resetFrog();
+          return;
+        }
+        if (row >= 1 && row <= laneRows && overlap(row, col, col)) squash = 350;
+        if (mode === 'demo') {
+          hopTimer -= dt;
+          if (hopTimer <= 0) {
+            hopTimer = 380 + rand(180);
+            const t = row + 1;
+            if (t <= 6 && !overlap(t, col - 1, col + 1)) row = t;
+          }
+        }
+        if (row === 6 && !reached) { reached = true; celebrate = 800; }
+      }
+
+      function key(k) {
+        if (k === 'up' && row < 6) row++;
+        else if (k === 'down' && row > 0) row--;
+        else if (k === 'left' && col > 0) col--;
+        else if (k === 'right' && col < cols - 1) col++;
+        if (row === 6 && !reached) { reached = true; celebrate = 800; }
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+        lanes.forEach((l, i) => {
+          const gy = laneRows - i;
+          l.cars.forEach(c => {
+            ctx.fillStyle = INK;
+            ctx.fillRect(
+              ox + c.x * cs,
+              oy + gy * cs + 3,
+              c.len * cs - 2,
+              cs - 6
+            );
+          });
+        });
+        const blink = celebrate > 0 && Math.floor(t / 120) % 2 === 0;
+        if (squash > 0) {
+          ctx.fillStyle = DIM;
+          ctx.fillRect(
+            ox + col * cs + 1,
+            oy + (totalRows - 1 - row) * cs + cs / 2,
+            cs - 2,
+            cs / 2 - 1
+          );
+        } else {
+          cell(ox + col * cs, oy + (totalRows - 1 - row) * cs, cs, blink ? INK : ACCENT);
+        }
+      }
+      return { update, draw, key, won: () => reached };
+    }
+
+    function cell(x, y, s, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x + 1, y + 1, s - 2, s - 2);
+    }
+
+    const Game = [Tetris, Snake, Frogger][rand(3)];
+    const game = Game();
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+
+    let looping = false;
+    function ensureLoop() {
+      if (looping || !running || reduced) return;
+      looping = true;
+      let last = performance.now();
+      (function frame(now) {
+        if (!running) return;
+        const dt = Math.min(now - last, 100);
+        last = now;
+        if (mode === 'playing') {
+          const rem = Math.max(0, deadline - now);
+          if (hintEl) hintEl.innerHTML = '&gt; ' + Math.ceil(rem / 1000) + 's left';
+          if (game.won && game.won()) { finish(true); return; }
+          if (rem <= 0) { finish(false); return; }
+        }
+        game.update(dt);
+        game.draw(now);
+        requestAnimationFrame(frame);
+      })(performance.now());
+    }
+
+    if (reduced) {
+      game.draw(0);
+    } else if (isTouch) {
+      ensureLoop();
+    } else {
+      game.draw(0);
+      if (hintEl) hintEl.style.visibility = 'visible';
+    }
+  })();
+
+  (function () {
+    const word = document.getElementById('hero-word');
+    if (!word || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const words = ['fix', 'build', 'design', 'create'];
+    let i = 0;
+    let italicTimers = [];
+    let endItalic = true;
+    const STEP = 80;
+
+    function setWord(w, startItalic) {
+      word.textContent = '';
+      for (const ch of w) {
+        const s = document.createElement('span');
+        s.textContent = ch;
+        if (startItalic) s.classList.add('it');
+        word.appendChild(s);
+      }
+    }
+
+    function schedule(fn, ms) {
+      italicTimers.push(setTimeout(fn, ms));
+    }
+
+    function wave(toItalic, startAt) {
+      const letters = word.querySelectorAll('span');
+      letters.forEach((s, idx) => {
+        schedule(() => s.classList.toggle('it', toItalic), startAt + idx * STEP);
+      });
+    }
+
+    setWord(words[0], false);
+    wave(true, 500);
+
+    setInterval(() => {
+      italicTimers.forEach(clearTimeout);
+      italicTimers = [];
+      word.classList.add('out');
+      setTimeout(() => {
+        i = (i + 1) % words.length;
+        const startItalic = endItalic;
+        const finishItalic = !startItalic;
+        setWord(words[i], startItalic);
+        word.classList.remove('out');
+        word.classList.add('pre');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          word.classList.remove('pre');
+          void word.offsetWidth;
+          wave(finishItalic, 450);
+        }));
+        endItalic = finishItalic;
+      }, 240);
+    }, 2600);
+  })();
+</script>
+
+</body>
+</html>
