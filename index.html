@@ -1018,14 +1018,6 @@
           return;
         }
         if (row >= 1 && row <= laneRows && overlap(row, col, col)) squash = 350;
-        if (mode === 'demo') {
-          hopTimer -= dt;
-          if (hopTimer <= 0) {
-            hopTimer = 380 + rand(180);
-            const t = row + 1;
-            if (t <= 6 && !overlap(t, col - 1, col + 1)) row = t;
-          }
-        }
         if (row === 6 && !reached) { reached = true; celebrate = 800; }
       }
 
