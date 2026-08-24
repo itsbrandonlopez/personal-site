@@ -94,26 +94,37 @@
 
   .loader .pad {
     display: none;
-    gap: 12px;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(3, 44px);
+    gap: 8px;
+    justify-content: center;
   }
   .loader .pad button {
     font-family: var(--mono);
-    font-size: 1.2rem;
-    width: 48px;
-    height: 48px;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: linear-gradient(#2e2e2e, #171717);
     color: var(--ink);
-    border: 1px solid var(--hairline);
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.6),
+      0 3px 0 #000;
     touch-action: manipulation;
   }
   .loader .pad button:active {
     background: var(--accent);
     color: #000;
-    border-color: var(--accent);
+    transform: translateY(2px);
+    box-shadow: none;
   }
+  .k-up { grid-area: 1 / 2; }
+  .k-left { grid-area: 2 / 1; border-radius: 12px 4px 4px 12px; }
+  .k-right { grid-area: 2 / 3; border-radius: 4px 12px 12px 4px; }
+  .k-down { grid-area: 3 / 2; }
 
   .readout {
     font-family: var(--mono);
@@ -508,10 +519,10 @@
   </div>
 
   <div class="pad" id="loader-pad">
-    <button type="button" data-k="left" aria-label="Left">&#8592;</button>
-    <button type="button" data-k="down" aria-label="Down">&#8595;</button>
-    <button type="button" data-k="up" aria-label="Up">&#8593;</button>
-    <button type="button" data-k="right" aria-label="Right">&#8594;</button>
+    <button type="button" class="k-up" data-k="up" aria-label="Up">&#8593;</button>
+    <button type="button" class="k-left" data-k="left" aria-label="Left">&#8592;</button>
+    <button type="button" class="k-right" data-k="right" aria-label="Right">&#8594;</button>
+    <button type="button" class="k-down" data-k="down" aria-label="Down">&#8595;</button>
   </div>
 </div>
 
