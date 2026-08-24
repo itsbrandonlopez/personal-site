@@ -95,6 +95,7 @@
     padding: 6px 10px;
     border: 1px solid var(--hairline);
     pointer-events: none;
+    z-index: 3;
   }
 
   /* ---------- copy ---------- */
@@ -251,17 +252,25 @@
   }
 
   const tag = document.querySelector('.tag');
-  const phrases = ['NO SIGNAL', 'CHECK INPUT', 'UNPLUGGED', 'LINE 404 DEAD', 'HELLO?'];
+  const phrases = ['NO SIGNAL', 'CHECK INPUT', 'UNPLUGGED'];
   let pi = 0;
 
   function rickroll() {
     stopped = true;
+    const shell = document.createElement('div');
+    shell.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;background:#000';
     const f = document.createElement('iframe');
-    f.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0';
-    f.title = 'Never Gonna Give You Up';
+    f.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0&rel=0&modestbranding=1';
+    f.title = '';
     f.allow = 'autoplay; encrypted-media';
-    f.style.cssText = 'width:100%;height:100%;border:0;display:block';
-    cv.replaceWith(f);
+    f.style.cssText =
+      'position:absolute;top:0;left:50%;height:100%;width:177.78%;' +
+      'transform:translateX(-50%);border:0;display:block;pointer-events:none';
+    const shield = document.createElement('div');
+    shield.style.cssText = 'position:absolute;inset:0;z-index:2';
+    shell.appendChild(f);
+    shell.appendChild(shield);
+    cv.replaceWith(shell);
     tag.textContent = 'SIGNAL ACQUIRED';
     mark.removeAttribute('title');
     mark.style.cursor = 'default';
