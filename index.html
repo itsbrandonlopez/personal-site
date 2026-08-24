@@ -79,11 +79,40 @@
     visibility: hidden;
   }
 
-  .loader .mark { width: 224px; height: 224px; }
+  .loader .mark {
+    width: 224px;
+    height: 224px;
+    border: 1px solid var(--hairline);
+    padding: 6px;
+  }
   .loader canvas {
     width: 100%;
     height: 100%;
     image-rendering: pixelated;
+    display: block;
+  }
+
+  .loader .pad {
+    display: none;
+    gap: 12px;
+  }
+  .loader .pad button {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+    touch-action: manipulation;
+  }
+  .loader .pad button:active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
   }
 
   .readout {
@@ -388,15 +417,15 @@
   }
   .cell:last-child { border-right: none; }
 
-  .cell:is(:hover, :focus-visible) {
+  a.cell:is(:hover, :focus-visible) {
     background: var(--accent);
     color: #000;
   }
-  .cell:is(:hover, :focus-visible) .label { color: rgba(0,0,0,0.65); }
+  a.cell:is(:hover, :focus-visible) .label { color: rgba(0,0,0,0.65); }
 
   .cell .status { display: flex; justify-content: space-between; gap: 12px; }
   .cell .status i { font-style: normal; color: var(--faint); }
-  .cell:is(:hover, :focus-visible) .status i { color: rgba(0,0,0,0.5); }
+  a.cell:is(:hover, :focus-visible) .status i { color: rgba(0,0,0,0.5); }
 
   .cell h3 {
     margin: auto 0 14px;
@@ -412,7 +441,7 @@
     color: var(--muted);
     margin-bottom: 40px;
   }
-  .cell:is(:hover, :focus-visible) p { color: rgba(0,0,0,0.75); }
+  a.cell:is(:hover, :focus-visible) p { color: rgba(0,0,0,0.75); }
 
   .cell .action {
     display: flex;
@@ -421,6 +450,7 @@
   }
   .cell .action::after { content: "\2197"; font-size: 1.1rem; }
   .cell.contact .action::after { content: "\2192"; }
+  div.cell .action::after { content: none; }
 
   @media (max-width: 900px) {
     .proj-grid { grid-template-columns: 1fr; }
@@ -476,6 +506,13 @@
     <span>&gt; ringing out the room<span class="ell"></span></span>
     <span>&gt; almost showtime<span class="ell"></span><i class="cursor"></i></span>
   </div>
+
+  <div class="pad" id="loader-pad">
+    <button type="button" data-k="left" aria-label="Left">&#8592;</button>
+    <button type="button" data-k="down" aria-label="Down">&#8595;</button>
+    <button type="button" data-k="up" aria-label="Up">&#8593;</button>
+    <button type="button" data-k="right" aria-label="Right">&#8594;</button>
+  </div>
 </div>
 
 <div class="page" id="page">
@@ -501,22 +538,29 @@
     </div>
     <div class="proj-grid">
 
-      <a class="cell" href="#PROJECT_URL_OPENCAPTION">
-        <div class="status"><span class="label">01</span><i>Finalizing</i></div>
-        <h3>OpenCaption Live</h3>
-        <p>Word-by-word live captions that run entirely offline on a Mac in your rack. No cloud speech API, no per-minute billing, nothing recorded — ever. In field testing at real shows now.</p>
+      <a class="cell" href="https://itsbrandonlopez.github.io/sermon-automator-site/" target="_blank" rel="noopener">
+        <div class="status"><span class="label">01</span><i>Live</i></div>
+        <h3>Sermon Automator</h3>
+        <p>Software that speeds up the SEO side of running a church's YouTube channel — so the message gets found, not just uploaded.</p>
         <div class="action">Take a look</div>
       </a>
 
+      <div class="cell">
+        <div class="status"><span class="label">02</span><i>Finalizing</i></div>
+        <h3>OpenCaption Live</h3>
+        <p>Word-by-word live captions that run entirely offline on a Mac in your rack. No cloud speech API, no per-minute billing, nothing recorded — ever. In field testing at real shows now.</p>
+        <div class="action">Coming soon</div>
+      </div>
+
       <a class="cell" href="#PROJECT_URL_DANTE">
-        <div class="status"><span class="label">02</span><i>Live</i></div>
-        <h3>Dante Doctor</h3>
+        <div class="status"><span class="label">03</span><i>Live</i></div>
+        <h3>Dante Troubleshooter</h3>
         <p>Troubleshooting for Dante networks, minus the forum spelunking. Find the problem before the problem finds your show.</p>
         <div class="action">Take a look</div>
       </a>
 
       <a class="cell contact" href="#CONTACT_EMAIL">
-        <div class="status"><span class="label">03</span><i>In development</i></div>
+        <div class="status"><span class="label">04</span><i>In development</i></div>
         <h3>Caption Suite for Resolve</h3>
         <p>A suite of captioning tools for DaVinci Resolve, currently being written. Want to talk shop about captions, Resolve, or anything else on this page?</p>
         <div class="action">Get in touch</div>
@@ -689,22 +733,53 @@
       setTimeout(() => window.__reveal(), 900);
     }
 
+    function pressKey(k) {
+      if (ended || reduced || !document.getElementById('loader')) return;
+      startPlay();
+      ensureLoop();
+      if (game.key) game.key(k);
+    }
+
     document.addEventListener('keydown', (e) => {
       if (ended || reduced || !document.getElementById('loader')) return;
       const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'drop' }[e.key];
       if (!k) return;
       e.preventDefault();
-      startPlay();
-      ensureLoop();
-      if (game.key) game.key(k);
+      pressKey(k);
     });
+
+    let touchStart = null;
+    cv.style.touchAction = 'none';
+    cv.addEventListener('touchstart', (e) => {
+      touchStart = [e.touches[0].clientX, e.touches[0].clientY];
+    }, { passive: true });
+    cv.addEventListener('touchend', (e) => {
+      if (!touchStart) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStart[0], dy = t.clientY - touchStart[1];
+      touchStart = null;
+      const k = Math.max(Math.abs(dx), Math.abs(dy)) < 18
+        ? 'up'
+        : Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+      pressKey(k);
+    });
+
+    const pad = document.getElementById('loader-pad');
+    if (pad) {
+      pad.addEventListener('pointerdown', (e) => {
+        const btn = e.target.closest('button[data-k]');
+        if (!btn) return;
+        e.preventDefault();
+        pressKey(btn.dataset.k);
+      });
+    }
 
     function rand(n) { return Math.floor(Math.random() * n); }
 
     /* ---------------- TETRIS ---------------- */
     function Tetris() {
-      const cols = 10, rows = 13, cs = 16;
-      const ox = (W - cols * cs) / 2, oy = (H - rows * cs) / 2;
+      const cols = 14, rows = 14, cs = 16;
+      const ox = 0, oy = 0;
       let grid, piece, acc, lockDelay, flash, cleared;
       const shapes = [
         [[0,0],[1,0],[2,0],[3,0]],
@@ -811,8 +886,8 @@
 
     /* ---------------- SNAKE ---------------- */
     function Snake() {
-      const n = 11, cs = 16;
-      const ox = (W - n * cs) / 2, oy = (H - n * cs) / 2;
+      const n = 14, cs = 16;
+      const ox = 0, oy = 0;
       const path = [];
       for (let r = 0; r < n; r++) {
         for (let c = 0; c < n; c++) {
@@ -880,9 +955,9 @@
 
     /* ---------------- FROGGER ---------------- */
     function Frogger() {
-      const cols = 13, laneRows = 5, cs = 16;
+      const cols = 14, laneRows = 5;
+      const cw = 16, chh = 32;
       const totalRows = laneRows + 2;
-      const ox = (W - cols * cs) / 2, oy = (H - totalRows * cs) / 2;
       let lanes, col, row, hopTimer, squash, celebrate;
       let reached = false;
       function makeLane(r) {
@@ -958,10 +1033,10 @@
           l.cars.forEach(c => {
             ctx.fillStyle = INK;
             ctx.fillRect(
-              ox + c.x * cs,
-              oy + gy * cs + 3,
-              c.len * cs - 2,
-              cs - 6
+              c.x * cw,
+              gy * chh + 6,
+              c.len * cw - 2,
+              chh - 12
             );
           });
         });
@@ -969,13 +1044,19 @@
         if (squash > 0) {
           ctx.fillStyle = DIM;
           ctx.fillRect(
-            ox + col * cs + 1,
-            oy + (totalRows - 1 - row) * cs + cs / 2,
-            cs - 2,
-            cs / 2 - 1
+            col * cw + 1,
+            (totalRows - 1 - row) * chh + 20,
+            cw - 2,
+            7
           );
         } else {
-          cell(ox + col * cs, oy + (totalRows - 1 - row) * cs, cs, blink ? INK : ACCENT);
+          ctx.fillStyle = blink ? INK : ACCENT;
+          ctx.fillRect(
+            col * cw + 1,
+            (totalRows - 1 - row) * chh + 9,
+            cw - 2,
+            cw - 2
+          );
         }
       }
       return { update, draw, key, won: () => reached };
@@ -1015,9 +1096,15 @@
       game.draw(0);
     } else if (isTouch) {
       ensureLoop();
+      if (pad) pad.style.display = 'flex';
+      if (hintEl) {
+        hintEl.innerHTML = 'swipe the board &middot; or tap the pad';
+        hintEl.style.visibility = 'visible';
+      }
     } else {
       game.draw(0);
-      if (hintEl) hintEl.style.visibility = 'visible';
+      const hint = document.getElementById('loader-hint');
+      if (hint) hint.style.visibility = 'visible';
     }
   })();
 
