@@ -709,12 +709,16 @@
       window.removeEventListener('wheel', onWheelUp);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, 0);
       if (window.__stopGame) window.__stopGame();
       page.classList.add('ready');
       loader.classList.add('done');
       setTimeout(() => loader.remove(), 1600);
     }
     window.__reveal = reveal;
+
+    document.documentElement.style.overflow = 'hidden';
 
     if (reduced) {
       reveal(true);
