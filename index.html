@@ -86,6 +86,8 @@
   .loader .hint {
     color: var(--faint);
     visibility: hidden;
+    line-height: 1.8;
+    text-align: center;
   }
 
   .loader .mark {
@@ -516,7 +518,7 @@
 <body>
 
 <div class="loader" id="loader" aria-hidden="true">
-  <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play &middot; esc or scroll up to skip</div>
+  <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play<br>esc or scroll up to skip</div>
 
   <div class="mark">
     <canvas id="loader-game" width="224" height="224"></canvas>
