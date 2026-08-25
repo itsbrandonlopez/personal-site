@@ -710,7 +710,7 @@
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
       document.documentElement.style.overflow = '';
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       if (window.__stopGame) window.__stopGame();
       page.classList.add('ready');
       loader.classList.add('done');
