@@ -738,7 +738,7 @@
     }
     function onTouchEnd() { touchY = null; }
     function onLoaderKey(e) {
-      if (e.key === 'Escape') { dismiss(); return; }
+      if (e.key === 'Escape') { reveal(true); return; }
       if (e.key !== 'Tab') return;
       const focusables = loader.querySelectorAll('button');
       if (!focusables.length) { e.preventDefault(); return; }
