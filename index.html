@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brandon Lopez — AVL Engineer & Technical Director</title>
 <meta name="description" content="Live audio, Q-SYS control systems, brand work, and software built by feel. Different rooms, same instinct: figure out how something works, then make it better.">
+<link rel="canonical" href="https://brandon-lopez.com/">
+<meta property="og:title" content="Brandon Lopez — AVL Engineer & Technical Director">
+<meta property="og:description" content="Live audio, Q-SYS control systems, brand work, and software built by feel. Different rooms, same instinct: figure out how something works, then make it better.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://brandon-lopez.com/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Brandon Lopez — AVL Engineer & Technical Director">
+<meta name="twitter:description" content="Live audio, Q-SYS control systems, brand work, and software built by feel. Different rooms, same instinct: figure out how something works, then make it better.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='7' r='2' fill='%23e9ff4f'/%3E%3C/svg%3E">
 <noscript><style>.loader{display:none}.page{transform:none}</style></noscript>
@@ -13,7 +21,7 @@
     --bg: #000;
     --ink: #fff;
     --muted: rgba(255, 255, 255, 0.62);
-    --faint: rgba(255, 255, 255, 0.4);
+    --faint: rgba(255, 255, 255, 0.55);
     --hairline: rgba(255, 255, 255, 0.28);
     --accent: #e9ff4f;
     --ease-snap: cubic-bezier(0.76, 0, 0.24, 1);
@@ -433,8 +441,9 @@
   a.cell:is(:hover, :focus-visible) .label { color: rgba(0,0,0,0.65); }
 
   .cell .status { display: flex; justify-content: space-between; gap: 12px; }
-  .cell .status i { font-style: normal; color: var(--faint); }
-  a.cell:is(:hover, :focus-visible) .status i { color: rgba(0,0,0,0.5); }
+  .cell .status { display: flex; justify-content: space-between; gap: 12px; }
+  .cell .status .st { font-style: normal; color: var(--faint); }
+  a.cell:is(:hover, :focus-visible) .status .st { color: rgba(0,0,0,0.5); }
 
   /* Dante Troubleshooter keeps its own sky-blue signature */
   .cell.dante { --accent: #38bdf8; }
@@ -507,7 +516,7 @@
 <body>
 
 <div class="loader" id="loader" aria-hidden="true">
-  <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play</div>
+  <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play &middot; esc or scroll up to skip</div>
 
   <div class="mark">
     <canvas id="loader-game" width="224" height="224"></canvas>
@@ -551,28 +560,28 @@
     <div class="proj-grid">
 
       <a class="cell dante" href="https://itsbrandonlopez.github.io/dante-troubleshooter-site/" target="_blank" rel="noopener">
-        <div class="status"><span class="label">01</span><i>Live</i></div>
+        <div class="status"><span class="label">01</span><span class="st">Live</span></div>
         <h3>Dante Troubleshooter</h3>
         <p>Troubleshooting for Dante networks, minus the forum spelunking. Find the problem before the problem finds your show.</p>
         <div class="action">Take a look</div>
       </a>
 
       <a class="cell" href="https://itsbrandonlopez.github.io/opencaption-live-site/" target="_blank" rel="noopener">
-        <div class="status"><span class="label">02</span><i>Finalizing</i></div>
+        <div class="status"><span class="label">02</span><span class="st">Finalizing</span></div>
         <h3>OpenCaption Live</h3>
         <p>Word-by-word live captions that run entirely offline on a Mac in your rack. No cloud speech API, no per-minute billing, nothing recorded — ever. In field testing at real shows now.</p>
         <div class="action">Take a look</div>
       </a>
 
       <a class="cell" href="mailto:hi@brandon-lopez.com?subject=Sermon%20Automator%20invite">
-        <div class="status"><span class="label">03</span><i>Invite only</i></div>
+        <div class="status"><span class="label">03</span><span class="st">Invite only</span></div>
         <h3>Sermon Automator</h3>
         <p>Software that speeds up the SEO side of running a church's YouTube channel — so the message gets found, not just uploaded.</p>
         <div class="action">Request an invite</div>
       </a>
 
       <a class="cell contact" href="mailto:hi@brandon-lopez.com?subject=Resolve%20Caption%20Suite">
-        <div class="status"><span class="label">04</span><i>In development</i></div>
+        <div class="status"><span class="label">04</span><span class="st">In development</span></div>
         <h3>Caption Suite for Resolve</h3>
         <p>A suite of captioning tools for DaVinci Resolve, currently being written. Want to talk shop about captions, Resolve, or anything else on this page?</p>
         <div class="action">Get in touch</div>
@@ -585,7 +594,7 @@
   <section class="wrap" aria-labelledby="about-h">
     <div class="section-head">
       <h2 id="about-h">A little about me.</h2>
-      <p>What I do, where I've been, and where I'm pointed.</p>
+      <p>What I do and where I've been.</p>
     </div>
     <div class="about-body">
       <p>Most of my time goes to live events and freelance AVL/Q-SYS work — churches, corporate events, and venues across the country. I've tuned PAs, show-called a 1,400-seat theatre, and built volunteer teams that run it all without me standing behind them.</p>
@@ -606,7 +615,7 @@
         <ul>
           <li>Dante Level 1, 2 &amp; 3 — Audinate</li>
           <li>Q-SYS Level 1 &amp; 2 + Q-SYS Lua scripting certified — QSC</li>
-          <li>Alcorn McBride</li>
+          <li>Alcorn McBride show controller programming training</li>
         </ul>
       </article>
 
@@ -695,6 +704,10 @@
         return;
       }
       revealed = true;
+      document.removeEventListener('keydown', onLoaderKey, true);
+      window.removeEventListener('wheel', onWheelUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
       if (window.__stopGame) window.__stopGame();
       page.classList.add('ready');
       loader.classList.add('done');
@@ -707,28 +720,37 @@
       return;
     }
 
+    function dismiss() {
+      if (performance.now() - start < 800) return;
+      if (window.__loaderPlaying && window.__loaderPlaying()) return;
+      reveal(true);
+    }
+    function onWheelUp(e) { if (e.deltaY < 0) dismiss(); }
+    let touchY = null;
+    function onTouchMove(e) {
+      if (touchY === null) return;
+      if (e.touches[0].clientY - touchY > 40) { touchY = null; dismiss(); }
+    }
+    function onTouchEnd() { touchY = null; }
+    function onLoaderKey(e) {
+      if (e.key === 'Escape') { dismiss(); return; }
+      if (e.key !== 'Tab') return;
+      const focusables = loader.querySelectorAll('button');
+      if (!focusables.length) { e.preventDefault(); return; }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (!loader.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    }
+    document.addEventListener('keydown', onLoaderKey, true);
+
     const go = () => reveal();
 
     window.addEventListener('load', go);
     setTimeout(go, 9500);
 
-    let touchY = null;
-    function dismiss() {
-      if (performance.now() - start < 800) return;
-      if (window.__loaderPlaying && window.__loaderPlaying()) return;
-      reveal(true);
-      window.removeEventListener('wheel', dismiss);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-    }
-    function onTouchMove(e) {
-      if (touchY === null) return;
-      if (e.touches[0].clientY - touchY > 40) { touchY = null; dismiss(); }
-    }
-    function onTouchEnd() {
-      touchY = null;
-    }
-    window.addEventListener('wheel', (e) => { if (e.deltaY < 0) dismiss(); }, { passive: true });
+    window.addEventListener('wheel', onWheelUp, { passive: true });
     window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
