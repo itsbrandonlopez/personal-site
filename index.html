@@ -711,6 +711,27 @@
 
     window.addEventListener('load', go);
     setTimeout(go, 9500);
+
+    let touchY = null;
+    function dismiss() {
+      if (performance.now() - start < 800) return;
+      if (window.__loaderPlaying && window.__loaderPlaying()) return;
+      reveal(true);
+      window.removeEventListener('wheel', dismiss);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    }
+    function onTouchMove(e) {
+      if (touchY === null) return;
+      if (e.touches[0].clientY - touchY > 40) { touchY = null; dismiss(); }
+    }
+    function onTouchEnd() {
+      touchY = null;
+    }
+    window.addEventListener('wheel', (e) => { if (e.deltaY < 0) dismiss(); }, { passive: true });
+    window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
   })();
 
   (function () {
