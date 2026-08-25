@@ -444,7 +444,6 @@
   a.cell:is(:hover, :focus-visible) .label { color: rgba(0,0,0,0.65); }
 
   .cell .status { display: flex; justify-content: space-between; gap: 12px; }
-  .cell .status { display: flex; justify-content: space-between; gap: 12px; }
   .cell .status .st { font-style: normal; color: var(--faint); }
   a.cell:is(:hover, :focus-visible) .status .st { color: rgba(0,0,0,0.5); }
 
@@ -474,7 +473,6 @@
   }
   .cell .action::after { content: "\2197"; font-size: 1.1rem; }
   .cell.contact .action::after { content: "\2192"; }
-  div.cell .action::after { content: none; }
 
   @media (max-width: 900px) {
     .proj-grid { grid-template-columns: 1fr; }
@@ -518,11 +516,11 @@
 </head>
 <body>
 
-<div class="loader" id="loader" aria-hidden="true">
+<div class="loader" id="loader">
   <div class="hint" id="loader-hint">&larr; &uarr; &darr; &rarr; &nbsp;arrow keys to play<br>esc or scroll up to skip</div>
 
   <div class="mark">
-    <canvas id="loader-game" width="224" height="224"></canvas>
+    <canvas id="loader-game" width="224" height="224" aria-hidden="true"></canvas>
   </div>
   <div class="readout">
     <span>&gt; warming up the PA<span class="ell"></span></span>
@@ -696,55 +694,67 @@
   (function () {
     const loader = document.getElementById('loader');
     const page = document.getElementById('page');
+    const cv = document.getElementById('loader-game');
+    const hintEl = document.getElementById('loader-hint');
+    const pad = document.getElementById('loader-pad');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!loader || !cv) return;
     const MIN_SHOW = 7200;
+    const DURATION = 30000;
     const start = performance.now();
 
+    const rand = (n) => Math.floor(Math.random() * n);
+    const blinkOn = (t, ms) => Math.floor(t / ms) % 2 === 0;
+    const makeGrid = (r, c) => Array.from({ length: r }, () => Array(c).fill(0));
+
     let revealed = false;
+    let running = true;
+    let mode = 'demo';
+    let ended = false;
+    let deadline = 0;
+    const playing = () => mode === 'playing' && !ended;
+
     function reveal(immediate) {
       if (revealed) return;
-      if (!immediate && ((window.__loaderPlaying && window.__loaderPlaying()) || performance.now() - start < MIN_SHOW)) {
+      if (!immediate && (playing() || performance.now() - start < MIN_SHOW)) {
         setTimeout(reveal, 400);
         return;
       }
       revealed = true;
+      running = false;
+      document.removeEventListener('keydown', onKey);
       document.removeEventListener('keydown', onLoaderKey, true);
       window.removeEventListener('wheel', onWheelUp);
+      window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchmove', blockScroll);
       document.documentElement.style.overflow = '';
       try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
       catch (err) { window.scrollTo(0, 0); }
-      if (window.__stopGame) window.__stopGame();
       page.classList.add('ready');
       loader.classList.add('done');
       setTimeout(() => loader.remove(), 1600);
     }
-    window.__reveal = reveal;
 
     document.documentElement.style.overflow = 'hidden';
 
-    if (reduced) {
-      reveal(true);
-      return;
-    }
-
     function dismiss() {
-      if (performance.now() - start < 800) return;
-      if (window.__loaderPlaying && window.__loaderPlaying()) return;
+      if (performance.now() - start < 800 || playing()) return;
       reveal(true);
     }
     function onWheelUp(e) { if (e.deltaY < 0) dismiss(); }
+    function blockScroll(e) { e.preventDefault(); }
     let touchY = null;
+    function onTouchStart(e) { touchY = e.touches[0].clientY; }
     function onTouchMove(e) {
-      if (touchY === null) return;
-      if (e.touches[0].clientY - touchY > 40) { touchY = null; dismiss(); }
+      if (touchY !== null && e.touches[0].clientY - touchY > 40) { touchY = null; dismiss(); }
     }
     function onTouchEnd() { touchY = null; }
     function onLoaderKey(e) {
       if (e.key === 'Escape') { reveal(true); return; }
       if (e.key !== 'Tab') return;
-      const focusables = loader.querySelectorAll('button');
+      const focusables = [...loader.querySelectorAll('button')].filter((b) => b.offsetParent);
       if (!focusables.length) { e.preventDefault(); return; }
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
@@ -752,46 +762,6 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       else if (!loader.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
     }
-    document.addEventListener('keydown', onLoaderKey, true);
-
-    const go = () => reveal();
-
-    window.addEventListener('load', go);
-    setTimeout(go, 9500);
-
-    window.addEventListener('wheel', onWheelUp, { passive: true });
-    window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-  })();
-
-  (function () {
-    const cv = document.getElementById('loader-game');
-    if (!cv) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const ctx = cv.getContext('2d');
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const W = 224, H = 224;
-    cv.width = W * dpr;
-    cv.height = H * dpr;
-    ctx.scale(dpr, dpr);
-
-    const INK = '#ffffff';
-    const DIM = 'rgba(255,255,255,0.45)';
-    const ACCENT = '#e9ff4f';
-
-    let running = true;
-    window.__stopGame = () => {
-      running = false;
-      document.removeEventListener('keydown', onKey);
-    };
-
-    const DURATION = 30000;
-    let mode = 'demo';
-    let deadline = 0;
-    const hintEl = document.getElementById('loader-hint');
-    let ended = false;
-    window.__loaderPlaying = () => mode === 'playing' && !ended;
 
     function startPlay() {
       if (mode === 'playing' || ended) return;
@@ -809,11 +779,11 @@
       ended = true;
       running = false;
       if (hintEl) hintEl.innerHTML = win ? '&gt; cleared. shipping it.' : '&gt; time&rsquo;s up.';
-      setTimeout(() => window.__reveal(), 900);
+      setTimeout(() => reveal(), 900);
     }
 
     function pressKey(k) {
-      if (ended || reduced || !document.getElementById('loader')) return;
+      if (ended || reduced || revealed) return;
       startPlay();
       ensureLoop();
       if (game.key) game.key(k);
@@ -826,7 +796,7 @@
       e.preventDefault();
       pressKey(k);
     }
-    if (!reduced) document.addEventListener('keydown', onKey);
+
     let touchStart = null;
     cv.style.touchAction = 'none';
     cv.addEventListener('touchstart', (e) => {
@@ -843,17 +813,23 @@
       pressKey(k);
     });
 
-    const pad = document.getElementById('loader-pad');
     if (pad) {
-      pad.addEventListener('pointerdown', (e) => {
+      pad.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-k]');
-        if (!btn) return;
-        e.preventDefault();
-        pressKey(btn.dataset.k);
+        if (btn) pressKey(btn.dataset.k);
       });
     }
 
-    function rand(n) { return Math.floor(Math.random() * n); }
+    const ctx = cv.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = 224, H = 224;
+    cv.width = W * dpr;
+    cv.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    const INK = '#ffffff';
+    const DIM = 'rgba(255,255,255,0.45)';
+    const ACCENT = '#e9ff4f';
 
     /* ---------------- TETRIS ---------------- */
     function Tetris() {
@@ -867,9 +843,6 @@
         [[0,0],[0,1],[0,2],[1,2]],
         [[1,0],[2,0],[0,1],[1,1]]
       ];
-      function emptyGrid() {
-        return Array.from({ length: rows }, () => Array(cols).fill(0));
-      }
       function collide(s, px, py) {
         return s.some(([sx, sy]) => {
           const gx = px + sx, gy = py + sy;
@@ -882,7 +855,7 @@
         const w = Math.max(...s.map(p => p[0])) + 1;
         piece = { s, x: rand(cols - w + 1), y: 0 };
       }
-      function reset() { grid = emptyGrid(); spawn(); flash = null; lockDelay = 0; cleared = 0; }
+      function reset() { grid = makeGrid(rows, cols); spawn(); flash = null; lockDelay = 0; cleared = 0; }
       reset();
       function clearFullRows() {
         const full = [];
@@ -979,7 +952,7 @@
       function placeFood() {
         let tries = 0;
         do { food = rand(total); tries++; }
-        while (tries < 300 && body.some(s => eq(s, path[food])));
+        while (tries < total && body.some(s => eq(s, path[food])));
       }
       function reset(keepFree) {
         body = [[0,0],[1,0],[2,0],[3,0]];
@@ -1024,7 +997,7 @@
         body.forEach(([x, y], k) => {
           cell(ox + x * cs, oy + y * cs, cs, k === body.length - 1 ? INK : DIM);
         });
-        if (Math.floor(t / 300) % 2 === 0) {
+        if (blinkOn(t, 300)) {
           const [fx, fy] = path[food];
           cell(ox + fx * cs, oy + fy * cs, cs, ACCENT);
         }
@@ -1110,7 +1083,7 @@
             );
           });
         });
-        const blink = celebrate > 0 && Math.floor(t / 120) % 2 === 0;
+        const blink = celebrate > 0 && blinkOn(t, 120);
         if (squash > 0) {
           ctx.fillStyle = DIM;
           ctx.fillRect(
@@ -1163,7 +1136,7 @@
             baseRow++;
             if (baseRow >= 4) hitFlash = 400;
           } else {
-            const g2 = Array.from({ length: rows }, () => Array(colsN).fill(0));
+            const g2 = makeGrid(rows, colsN);
             alive.forEach(([ri, ci]) => { g2[ri][ci + dirv] = 1; });
             grid = g2;
           }
@@ -1187,13 +1160,14 @@
           bulletAcc += dt;
           while (bulletAcc >= 70 && bullet) {
             bulletAcc -= 70;
-            bullet.y--;
-            if (bullet.y < 0) { bullet = null; break; }
             const gy = bullet.y - baseRow;
             if (gy >= 0 && gy < rows && grid[gy][bullet.col]) {
               grid[gy][bullet.col] = 0;
               bullet = null;
+              break;
             }
+            bullet.y--;
+            if (bullet.y < 0) { bullet = null; break; }
           }
         }
       }
@@ -1211,7 +1185,7 @@
           if (v) ctx.fillRect(ox + ci * cs + 3, (ri + baseRow) * chh + 10, cs - 6, cs - 6);
         }));
         if (bullet) ctx.fillRect(ox + bullet.col * cs + 7, bullet.y * chh + 12, 2, 8);
-        const blink = hitFlash > 0 && Math.floor(t / 120) % 2 === 0;
+        const blink = hitFlash > 0 && blinkOn(t, 120);
         ctx.fillStyle = blink ? INK : ACCENT;
         ctx.fillRect(ox + playerCol * cs + 1, 6 * chh + 14, cs - 2, 10);
       }
@@ -1250,17 +1224,25 @@
 
     if (reduced) {
       game.draw(0);
-    } else if (isTouch) {
+      reveal(true);
+    } else {
+      document.addEventListener('keydown', onLoaderKey, true);
+      document.addEventListener('keydown', onKey);
+      window.addEventListener('wheel', onWheelUp, { passive: true });
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove', onTouchMove, { passive: true });
+      window.addEventListener('touchend', onTouchEnd, { passive: true });
+      document.addEventListener('touchmove', blockScroll, { passive: false });
+
+      window.addEventListener('load', () => reveal());
+      setTimeout(() => reveal(), 9500);
+
       ensureLoop();
-      if (pad) pad.style.display = 'grid';
+      if (isTouch && pad) pad.style.display = 'grid';
       if (hintEl) {
-        hintEl.innerHTML = 'swipe the board &middot; or tap the pad';
+        if (isTouch) hintEl.innerHTML = 'swipe the board &middot; or tap the pad';
         hintEl.style.visibility = 'visible';
       }
-    } else {
-      game.draw(0);
-      const hint = document.getElementById('loader-hint');
-      if (hint) hint.style.visibility = 'visible';
     }
   })();
 

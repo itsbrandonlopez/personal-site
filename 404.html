@@ -165,7 +165,7 @@
   .readout > span.done .ell::after { content: "."; animation: none; width: auto; }
 
   .actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; text-align: center; }
-  .cta {
+  .cta, .ghost {
     display: inline-block;
     font-family: var(--mono);
     font-size: 0.78rem;
@@ -173,24 +173,18 @@
     text-transform: uppercase;
     letter-spacing: 0.14em;
     padding: 16px 26px;
-    background: var(--accent);
-    color: #000;
-    transition: transform 0.15s ease;
     white-space: nowrap;
     text-align: center;
   }
+  .cta {
+    background: var(--accent);
+    color: #000;
+    transition: transform 0.15s ease;
+  }
   .cta:hover { transform: translateY(-2px); }
   .ghost {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    padding: 16px 26px;
     border: 1px solid var(--hairline);
-    transition: all 0.15s ease;
-    white-space: nowrap;
-    text-align: center;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   .ghost:hover { background: var(--ink); color: #000; border-color: var(--ink); }
 
@@ -227,8 +221,8 @@
 </div>
 
 <main class="wrap">
-  <div class="mark" id="mark" title="Give it a thump">
-    <canvas id="static" width="56" height="56"></canvas>
+  <div class="mark" id="mark" role="button" tabindex="0" aria-label="Retry" title="Give it a thump">
+    <canvas id="static" width="56" height="56" aria-hidden="true"></canvas>
     <span class="tag">Click to retry</span>
   </div>
   <div>
@@ -269,7 +263,7 @@
   function noise() {
     const img = ctx.createImageData(W, H);
     const d = img.data;
-    let seed = Math.floor(Math.random() * 0xffffffff);
+    let seed = Math.floor(Math.random() * 0xffffffff) || 1;
     const rnd = () => {
       seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
       return (seed >>> 0) / 0xffffffff;
@@ -321,13 +315,18 @@
     mark.style.borderColor = 'var(--accent)';
   }
 
-  mark.addEventListener('click', () => {
+  function retry() {
     if (stopped) return;
-    pi++;
     if (pi >= phrases.length) { rickroll(); return; }
     tag.innerHTML = phrases[pi];
-    if (pi === 1) tag.classList.add('bait');
+    if (pi === phrases.length - 1) tag.classList.add('bait');
+    pi++;
     if (!reduced) noise();
+  }
+
+  mark.addEventListener('click', retry);
+  mark.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); retry(); }
   });
 })();
 </script>
