@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>SermonAutomator</title>
+        <item>
+            <title>0.10.0</title>
+            <pubDate>Thu, 10 Sep 2026 10:56:59 -0400</pubDate>
+            <sparkle:version>20</sparkle:version>
+            <sparkle:shortVersionString>0.10.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://brandon-lopez.com/sermon-automator/downloads/SermonAutomator-0.10.0.zip" length="3411426" type="application/octet-stream" sparkle:edSignature="zkaeSLQQedvN/pnJzPp4UWyJNU+zdbzeIPkgIkSprIIZLpnX+pSUykPCHuKV+XHamuoPjSCufaJIQxKB8QHkAg=="/>
+        </item>
+    </channel>
+</rss>
