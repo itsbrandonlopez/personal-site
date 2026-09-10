@@ -3,13 +3,13 @@
     <channel>
         <title>SermonAutomator</title>
         <item>
-            <title>0.10.0</title>
-            <pubDate>Thu, 10 Sep 2026 10:56:59 -0400</pubDate>
-            <sparkle:version>20</sparkle:version>
-            <sparkle:shortVersionString>0.10.0</sparkle:shortVersionString>
+            <title>0.10.1</title>
+            <pubDate>Thu, 10 Sep 2026 12:40:41 -0400</pubDate>
+            <sparkle:version>21</sparkle:version>
+            <sparkle:shortVersionString>0.10.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://brandon-lopez.com/sermon-automator/downloads/SermonAutomator-0.10.0.zip" length="3411426" type="application/octet-stream" sparkle:edSignature="zkaeSLQQedvN/pnJzPp4UWyJNU+zdbzeIPkgIkSprIIZLpnX+pSUykPCHuKV+XHamuoPjSCufaJIQxKB8QHkAg=="/>
+            <enclosure url="https://brandon-lopez.com/sermon-automator/downloads/SermonAutomator-0.10.1.zip" length="3411430" type="application/octet-stream" sparkle:edSignature="gXQ4x+Gr4lBnPv1Kc7fW6W4r3JaWqBIa0k2zGDadftnsmZBX3jk4ekp3ol/tfa5SlUrbIMjT0aYITsU8RtkpDA=="/>
         </item>
     </channel>
 </rss>
